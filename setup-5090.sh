@@ -8,21 +8,24 @@ echo "  5090 GPU Box Setup"
 echo "  Ubuntu 24.04 + RTX 5090"
 echo "========================================="
 
-# 1. Update system
-echo "[1/6] Updating system..."
+# 1. Nuke ALL existing nvidia packages first
+echo "[1/7] Nuking all existing NVIDIA packages..."
+sudo apt-get remove --purge '^nvidia-.*' -y 2>/dev/null || true
+sudo apt-get remove --purge '^libnvidia-.*' -y 2>/dev/null || true
+sudo apt-get remove --purge 'nvidia-*' -y 2>/dev/null || true
+sudo apt-get autoremove --purge -y 2>/dev/null || true
+sudo apt-get autoclean
+
+# 2. Update system
+echo "[2/7] Updating system..."
 sudo apt update && sudo apt upgrade -y
 
-# 2. Install build tools
-echo "[2/6] Installing build tools..."
+# 3. Install build tools
+echo "[3/7] Installing build tools..."
 sudo apt install -y build-essential dkms linux-headers-$(uname -r) wget curl git openssh-server sshfs
 
-# 3. Remove any broken nvidia packages
-echo "[3/6] Cleaning old NVIDIA packages..."
-sudo apt-get remove --purge '^nvidia-.*' -y 2>/dev/null || true
-sudo apt-get autoremove --purge -y 2>/dev/null || true
-
 # 4. Install NVIDIA driver 570 (required for RTX 5090)
-echo "[4/6] Downloading NVIDIA driver 570..."
+echo "[4/7] Downloading NVIDIA driver 570..."
 cd /tmp
 wget -q --show-progress https://us.download.nvidia.com/XFree86/Linux-x86_64/570.133.07/NVIDIA-Linux-x86_64-570.133.07.run
 chmod +x NVIDIA-Linux-x86_64-570.133.07.run
@@ -30,12 +33,12 @@ echo "Installing NVIDIA driver (this takes a few minutes)..."
 sudo sh NVIDIA-Linux-x86_64-570.133.07.run --silent --dkms
 
 # 5. Install Docker
-echo "[5/6] Installing Docker..."
+echo "[5/7] Installing Docker..."
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 
 # 6. Install Ollama
-echo "[5/6] Installing Ollama..."
+echo "[6/7] Installing Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 # Configure Ollama to listen on all interfaces
 sudo mkdir -p /etc/systemd/system/ollama.service.d
@@ -47,7 +50,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart ollama
 
 # 7. Install Tailscale
-echo "[6/6] Installing Tailscale..."
+echo "[7/7] Installing Tailscale..."
 curl -fsSL https://tailscale.com/install.sh | sh
 
 echo ""
